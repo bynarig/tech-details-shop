@@ -1,140 +1,140 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { 
+  login as clientLogin, 
+  register as clientRegister, 
+  logout as clientLogout,
+  fetchCurrentUser,
+  User
+} from '@/lib/auth/clientAuthUtils';
 
-type User = {
-  id: string;
-  name: string;
-  email: string;
-};
-
-type AuthContextType = {
+interface AuthContextType {
   user: User | null;
-  loading: boolean;
+  loading: boolean; // Renamed from isLoading for consistency
+  error: string | null;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<{success: boolean, error?: string}>;
+  register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => Promise<boolean>;
-};
+}
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: false,
+  error: null,
+  login: async () => false,
+  register: async () => false,
+  logout: async () => false,
+});
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Load user on initial render
   useEffect(() => {
-    // Fetch user data when the component mounts
-    const fetchUser = async () => {
+    let isMounted = true;
+    
+    const loadUser = async () => {
       try {
-        const response = await fetch('/api/auth/user');
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-        } else {
-          setUser(null);
+        console.log("Fetching current user...");
+        const userData = await fetchCurrentUser();
+        
+        // Only update state if the component is still mounted
+        if (isMounted) {
+          console.log("User data received:", userData ? "User found" : "No user");
+          setUser(userData);
         }
-      } catch (error) {
-        console.error('Failed to fetch user:', error);
-        setUser(null);
+      } catch (err) {
+        console.error("Failed to load user", err);
+        if (isMounted) {
+          setError("Failed to authenticate");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchUser();
+    loadUser();
+    
+    // Cleanup function to prevent state updates on unmounted component
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
+  // Login function
   const login = async (email: string, password: string): Promise<boolean> => {
+    setError(null);
+    setLoading(true);
+    
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
+      const result = await clientLogin(email, password);
+      
+      if (result.success && result.user) {
+        setUser(result.user);
         return true;
       }
+      
+      setError(result.error || 'Login failed');
       return false;
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred');
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Inside your register function:
-const register = async (name: string, email: string, password: string): Promise<{success: boolean, error?: string, code?: string}> => {
-  try {
-    const response = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name, email, password }),
-    });
-
-    const data = await response.json();
+  // Register function
+  const register = async (name: string, email: string, password: string): Promise<boolean> => {
+    setError(null);
+    setLoading(true);
     
-    if (response.ok) {
-      setUser(data.user);
-      return { success: true };
-    }
-    
-    // For email exists case, return the specific code
-    if (response.status === 409 && data.code === 'EMAIL_EXISTS') {
-      return { 
-        success: false, 
-        error: data.message || 'Email already registered', 
-        code: 'EMAIL_EXISTS'
-      };
-    }
-    
-    // For other errors
-    return { 
-      success: false, 
-      error: data.error || 'Registration failed'
-    };
-  } catch (error) {
-    console.error('Registration error:', error);
-    return { 
-      success: false, 
-      error: 'Network error. Please check your connection and try again.'
-    };
-  }
-};
-
-  const logout = async (): Promise<boolean> => {
     try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        setUser(null);
+      const result = await clientRegister(name, email, password);
+      
+      if (result.success && result.user) {
+        setUser(result.user);
         return true;
       }
+      
+      setError(result.error || 'Registration failed');
       return false;
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Logout function
+  const logout = async (): Promise<boolean> => {
+    setLoading(true);
+    try {
+      const success = await clientLogout();
+      if (success) {
+        // Reset authentication state
+        setUser(null);
+      }
+      return success;
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, error, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}
+export const useAuth = () => useContext(AuthContext);

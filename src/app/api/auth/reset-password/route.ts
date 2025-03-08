@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db/mongodb';
 import { jwtVerify } from 'jose';
-import { hashPassword } from '@/lib/auth/authUtils';
+import { hashPassword } from '@/lib/auth/serverAuthUtils';
 import { ObjectId } from 'mongodb';
 
 // Force Node.js runtime

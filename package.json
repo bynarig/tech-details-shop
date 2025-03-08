@@ -2,27 +2,34 @@
   "name": "tech-details-shop",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.2.0",
+    "@reduxjs/toolkit": "^2.6.1",
     "bcryptjs": "^3.0.2",
     "daisyui": "^5.0.0",
+    "dotenv": "^16.4.7",
     "jose": "^6.0.8",
     "mongodb": "^6.14.2",
     "next": "15.2.1",
     "nodemailer": "^6.10.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-redux": "^9.2.0",
+    "redux-persist": "^6.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@faker-js/faker": "^9.6.0",
     "@tailwindcss/postcss": "^4.0.11",
     "@types/bcryptjs": "^2.4.6",
-    "@types/mongodb": "^4.0.7",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

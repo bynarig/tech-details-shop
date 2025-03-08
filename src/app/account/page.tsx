@@ -1,33 +1,52 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import { useAuth } from "@/contexts/AuthContext";
+import Link from "next/link";
 
 export default function AccountPage() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
+    // Wait until authentication state is determined
+    if (!loading) {
+      if (!user) {
+        console.log("User not authenticated, redirecting to home");
+        // Redirect to home page instead of login
+        router.push('/');
+      }
+      setIsAuthChecked(true);
     }
   }, [user, loading, router]);
 
   const handleLogout = async () => {
-    await logout();
-    router.push('/');
+    try {
+      const success = await logout();
+      if (success) {
+        console.log("Logout successful, redirecting to home");
+        router.push('/');
+      } else {
+        console.error("Logout failed");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
-  if (loading) {
+  // Show loading state while auth is being checked
+  if (loading || (!user && !isAuthChecked)) {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen container mx-auto px-4 py-10">
-          <div className="flex justify-center items-center h-64">
+        <div className="min-h-screen container mx-auto px-4 py-10 flex justify-center items-center">
+          <div className="text-center">
             <span className="loading loading-spinner loading-lg"></span>
+            <p className="mt-4">Loading your account...</p>
           </div>
         </div>
         <Footer />
@@ -35,8 +54,9 @@ export default function AccountPage() {
     );
   }
 
-  if (!user) {
-    return null; // Will redirect in useEffect
+  // Don't show account page content if not authenticated
+  if (!user && isAuthChecked) {
+    return null;
   }
 
   return (
@@ -54,11 +74,11 @@ export default function AccountPage() {
                     <h3 className="text-xl font-bold mb-2">Personal Information</h3>
                     <div className="mb-4">
                       <p className="font-semibold">Name:</p>
-                      <p>{user.name}</p>
+                      <p>{user?.name}</p>
                     </div>
                     <div className="mb-4">
                       <p className="font-semibold">Email:</p>
-                      <p>{user.email}</p>
+                      <p>{user?.email}</p>
                     </div>
                     <div className="flex flex-wrap gap-2 mt-4">
                       <button className="btn btn-primary btn-sm">
@@ -87,7 +107,7 @@ export default function AccountPage() {
                         <tbody>
                           <tr>
                             <td className="text-primary">
-                              <a href="/account/orders/123" className="link">ORD-123456</a>
+                              <Link href="/account/orders/123" className="link">ORD-123456</Link>
                             </td>
                             <td>March 5, 2025</td>
                             <td>
@@ -97,7 +117,7 @@ export default function AccountPage() {
                           </tr>
                           <tr>
                             <td className="text-primary">
-                              <a href="/account/orders/124" className="link">ORD-123457</a>
+                              <Link href="/account/orders/124" className="link">ORD-123457</Link>
                             </td>
                             <td>February 28, 2025</td>
                             <td>
@@ -109,9 +129,9 @@ export default function AccountPage() {
                       </table>
                     </div>
                     <div className="text-center mt-2">
-                      <a href="/account/orders" className="link link-primary">
+                      <Link href="/account/orders" className="link link-primary">
                         View All Orders
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -122,15 +142,15 @@ export default function AccountPage() {
                   <div className="card-body">
                     <h3 className="text-xl font-bold mb-2">Account Actions</h3>
                     <div className="flex flex-col gap-2">
-                      <a href="/account/orders" className="btn btn-outline btn-block justify-start">
+                      <Link href="/account/orders" className="btn btn-outline btn-block justify-start">
                         My Orders
-                      </a>
-                      <a href="/account/wishlist" className="btn btn-outline btn-block justify-start">
+                      </Link>
+                      <Link href="/account/wishlist" className="btn btn-outline btn-block justify-start">
                         Wishlist
-                      </a>
-                      <a href="/account/addresses" className="btn btn-outline btn-block justify-start">
+                      </Link>
+                      <Link href="/account/addresses" className="btn btn-outline btn-block justify-start">
                         Addresses
-                      </a>
+                      </Link>
                       <button 
                         onClick={handleLogout} 
                         className="btn btn-error btn-outline btn-block justify-start mt-4"

@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { logout } from '@/lib/auth/authUtils';
+import { clearAuthCookie } from '@/lib/auth/serverAuthUtils';
 
 export async function POST(request: NextRequest) {
   try {
-    await logout();
-    return NextResponse.json({ success: true });
+    // Clear authentication cookie
+    const response = NextResponse.json({ success: true });
+    
+    // Add the cookie clearing function
+    clearAuthCookie(response);
+    
+    return response;
   } catch (error) {
     console.error('Logout error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to logout' },
       { status: 500 }
     );
   }
