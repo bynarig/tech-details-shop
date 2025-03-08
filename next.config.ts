@@ -1,7 +1,7 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // Force standard Node.js environment for the server
+  serverExternalPackages: ['mongodb', 'bcryptjs']
 };
 
-export default nextConfig;
+module.exports = nextConfig;

@@ -1,0 +1,72 @@
+import { Product, Category } from "@/types";
+
+export const categories: Category[] = [
+  { id: "1", name: "Screens", slug: "screens" },
+  { id: "2", name: "Batteries", slug: "batteries" },
+  { id: "3", name: "Cases", slug: "cases" },
+  { id: "4", name: "Charging Ports", slug: "charging-ports" },
+  { id: "5", name: "Cameras", slug: "cameras" },
+];
+
+export const products: Product[] = [
+  {
+    id: "1",
+    name: "iPhone 14 Pro OLED Screen",
+    description: "Original replacement screen for iPhone 14 Pro",
+    price: 129.99,
+    image: "/images/iphone-screen.jpg",
+    category: "screens",
+    inStock: true,
+    rating: 4.8,
+  },
+  {
+    id: "2",
+    name: "Samsung Galaxy S23 Battery",
+    description: "High capacity replacement battery for Samsung Galaxy S23",
+    price: 49.99,
+    image: "/images/samsung-battery.jpg",
+    category: "batteries",
+    inStock: true,
+    rating: 4.6,
+  },
+  {
+    id: "3",
+    name: "iPhone 13 Charging Port",
+    description: "Original charging port flex cable for iPhone 13",
+    price: 24.99,
+    image: "/images/iphone-charging.jpg", 
+    category: "charging-ports",
+    inStock: true,
+    rating: 4.7,
+  },
+  {
+    id: "4",
+    name: "Google Pixel 7 Camera Module",
+    description: "Replacement main camera module for Google Pixel 7",
+    price: 89.99,
+    image: "/images/pixel-camera.jpg",
+    category: "cameras",
+    inStock: false,
+    rating: 4.9,
+  },
+  {
+    id: "5",
+    name: "iPhone 14 Pro Max Silicone Case",
+    description: "Protective silicone case for iPhone 14 Pro Max",
+    price: 19.99,
+    image: "/images/iphone-case.jpg",
+    category: "cases",
+    inStock: true,
+    rating: 4.5,
+  },
+  {
+    id: "6",
+    name: "Samsung Galaxy S22 Screen",
+    description: "AMOLED screen replacement for Samsung Galaxy S22",
+    price: 109.99,
+    image: "/images/samsung-screen.jpg",
+    category: "screens",
+    inStock: true,
+    rating: 4.7,
+  },
+];
