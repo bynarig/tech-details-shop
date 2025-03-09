@@ -4,15 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { formatDate } from '@/lib/utils';
+import { User } from '@/types';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  createdAt: string;
-  totalOrders?: number;
-}
 
 export default function UsersAdminPage() {
   const [users, setUsers] = useState<User[]>([]);

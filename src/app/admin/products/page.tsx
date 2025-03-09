@@ -3,18 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  inStock: boolean;
-  stock?: number;
-  images?: string[];
-  description?: string;
-  sku?: string;
-}
+import { Product } from '@/types';
 
 export default function ProductsAdminPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -62,7 +51,7 @@ export default function ProductsAdminPage() {
       }
     } catch (error) {
       console.error('Error fetching products:', error);
-      setError(error.message);
+      setError((error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -124,7 +113,7 @@ export default function ProductsAdminPage() {
                   </div>
                 </td>
                 <td>{product.name}</td>
-                <td>{product.category}</td>
+                <td>{product.categories[0]}</td>
                 <td>${product.price.toFixed(2)}</td>
                 <td>
                   <span className={`badge ${product.inStock ? 'badge-success' : 'badge-error'}`}>

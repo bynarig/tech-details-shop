@@ -3,13 +3,10 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addItem } from "@/store/slices/cartSlice";
-import { Product } from "@/lib/data/productData";
 
-interface AddToCartProps {
-  product: Product;
-}
+import {Product} from "@/types";
 
-export default function AddToCart({ product }: AddToCartProps) {
+export default function AddToCart(product: Product) {
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -25,7 +22,7 @@ export default function AddToCart({ product }: AddToCartProps) {
         price: product.price,
         quantity,
         image: product.images[0],
-        category: product.category
+        categories: product.categories
       })
     );
     

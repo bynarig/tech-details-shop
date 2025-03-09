@@ -92,7 +92,7 @@ export async function getUserFromToken() {
     const { db } = await connectToDatabase();
     
     const user = await db.collection('users').findOne({ 
-      _id: new ObjectId(payload.id as string) 
+      _id: new ObjectId(payload.id as string),
     });
     
     if (!user) {
@@ -101,7 +101,14 @@ export async function getUserFromToken() {
     
     // Return user without password
     const { password, ...userWithoutPassword } = user;
-    return { ...userWithoutPassword, _id: user._id.toString() };
+    
+    // Ensure role is included in the returned user object
+    return { 
+      ...userWithoutPassword, 
+      _id: user._id.toString(),
+      // Make sure role is explicitly included (even though it should be in userWithoutPassword)
+      role: user.role || 'user' // Default to 'user' if role is not defined
+    };
   } catch (error) {
     console.error('Error getting user from token:', error);
     return null;

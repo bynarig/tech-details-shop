@@ -3,15 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-interface LowStockProduct {
-  id: string;
-  name: string;
-  stockLevel: number;
-  category: string;
-}
+import { Product } from "@/types";
 
 export default function LowStockAlert() {
-  const [products, setProducts] = useState<LowStockProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -91,10 +86,10 @@ export default function LowStockAlert() {
                       {product.name}
                     </Link>
                   </td>
-                  <td>{product.category}</td>
+                  <td>{product.categories[0]}</td>
                   <td>
-                    <span className={`badge ${product.stockLevel <= 0 ? 'badge-error' : 'badge-warning'}`}>
-                      {product.stockLevel <= 0 ? 'Out of stock' : `${product.stockLevel} left`}
+                    <span className={`badge ${product.stock <= 0 ? 'badge-error' : 'badge-warning'}`}>
+                      {product.stock <= 0 ? 'Out of stock' : `${product.stock} left`}
                     </span>
                   </td>
                 </tr>

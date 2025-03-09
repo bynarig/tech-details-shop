@@ -25,7 +25,6 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           slug: "",
           description: "",
           price: 0,
-          category: "",
           categorySlug: "",
           images: [""],
           inStock: true,

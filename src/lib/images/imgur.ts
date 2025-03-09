@@ -1,9 +1,9 @@
 /**
- * Service for uploading images to Imgur
+ * Imgur Image Upload Service
+ * Handles image upload operations to Imgur API
  */
-
-// Using our server API instead of direct Imgur uploads for better security
-const UPLOAD_API_URL = '/api/upload/image';
+const IMGUR_CLIENT_ID = process.env.NEXT_PUBLIC_IMGUR_CLIENT_ID || 'YOUR_IMGUR_CLIENT_ID';
+const IMGUR_UPLOAD_URL = 'https://api.imgur.com/3/image';
 
 interface ImgurResponse {
   success: boolean;
@@ -17,41 +17,42 @@ interface ImgurResponse {
 }
 
 /**
- * Uploads an image file to Imgur via our server API
- * @param imageFile - The image file to upload
- * @returns Promise with the Imgur response containing the image URL
+ * Uploads an image file to Imgur and returns the URL
  */
 export async function uploadToImgur(imageFile: File): Promise<ImgurResponse> {
-  try {
-    // Create form data for the upload
-    const formData = new FormData();
-    formData.append('image', imageFile);
+  const formData = new FormData();
+  formData.append('image', imageFile);
 
-    // Make the API request to our server endpoint
-    const response = await fetch(UPLOAD_API_URL, {
+  try {
+    const response = await fetch(IMGUR_UPLOAD_URL, {
       method: 'POST',
+      headers: {
+        'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`,
+      },
       body: formData,
-      credentials: 'include', // Send cookies for authentication
     });
 
-    const jsonResponse = await response.json();
+    const data = await response.json();
 
     if (!response.ok) {
-      console.error('Image upload failed:', jsonResponse);
       return {
         success: false,
         status: response.status,
-        error: jsonResponse.error || 'Upload failed',
+        error: data.data?.error || 'Failed to upload image',
       };
     }
 
     return {
       success: true,
       status: response.status,
-      data: jsonResponse.data,
+      data: {
+        id: data.data.id,
+        link: data.data.link,
+        deletehash: data.data.deletehash,
+      },
     };
   } catch (error) {
-    console.error('Error uploading image:', error);
+    console.error('Error uploading to Imgur:', error);
     return {
       success: false,
       status: 500,
@@ -61,20 +62,28 @@ export async function uploadToImgur(imageFile: File): Promise<ImgurResponse> {
 }
 
 /**
- * Upload multiple images to Imgur
- * @param imageFiles - Array of image files to upload
- * @returns Promise with array of image URLs
+ * Uploads a data URL to Imgur
+ * Converts the data URL to a file first
  */
-export async function uploadMultipleImagesToImgur(
-  imageFiles: File[]
-): Promise<string[]> {
-  const uploadPromises = imageFiles.map((file) => uploadToImgur(file));
-  const results = await Promise.all(uploadPromises);
-  
-  // Filter out failures and extract URLs
-  return results
-    .filter((result) => result.success && result.data?.link)
-    .map((result) => result.data!.link);
+export async function uploadDataUrlToImgur(dataUrl: string): Promise<ImgurResponse> {
+  try {
+    // Convert data URL to blob
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    
+    // Create a File object from the blob
+    const file = new File([blob], "image.jpg", { type: blob.type });
+    
+    // Upload the file
+    return await uploadToImgur(file);
+  } catch (error) {
+    console.error('Error processing data URL:', error);
+    return {
+      success: false,
+      status: 500,
+      error: error instanceof Error ? error.message : 'Failed to process image',
+    };
+  }
 }
 
 /**
@@ -87,4 +96,11 @@ export function isValidUrl(str: string): boolean {
   } catch (e) {
     return false;
   }
+}
+
+/**
+ * Check if a string is a data URL
+ */
+export function isDataUrl(str: string): boolean {
+  return typeof str === 'string' && str.startsWith('data:');
 }

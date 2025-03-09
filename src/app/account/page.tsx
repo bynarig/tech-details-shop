@@ -13,11 +13,8 @@ export default function AccountPage() {
   const [isAuthChecked, setIsAuthChecked] = useState(false);
 
   useEffect(() => {
-    // Wait until authentication state is determined
     if (!loading) {
       if (!user) {
-        console.log("User not authenticated, redirecting to home");
-        // Redirect to home page instead of login
         router.push('/');
       }
       setIsAuthChecked(true);
@@ -54,7 +51,6 @@ export default function AccountPage() {
     );
   }
 
-  // Don't show account page content if not authenticated
   if (!user && isAuthChecked) {
     return null;
   }

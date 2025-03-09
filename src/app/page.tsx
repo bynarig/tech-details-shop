@@ -12,8 +12,12 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
   const filteredProducts = selectedCategory 
-    ? products.filter(product => product.category === categories.find(c => c.id === selectedCategory)?.slug) 
-    : products;
+      ? products.filter(product => {
+          const categorySlug = categories.find(c => c.id === selectedCategory)?.slug;
+          // Check if product.categories is an array and includes the category slug
+          return product.categories.includes(categorySlug || "");
+        })
+      : products;
 
   return (
     <>

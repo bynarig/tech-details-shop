@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db/mongodb';
 import { getUserFromToken } from '@/lib/auth/serverAuthUtils';
-import { ObjectId } from 'mongodb';
 
 export async function GET(request: NextRequest) {
   try {

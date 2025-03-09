@@ -4,15 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  createdAt: string;
-  updatedAt?: string;
-}
+import { User } from '@/types';
 
 export default function UserEditPage({ params }: { params: { id: string } }) {
   const router = useRouter();

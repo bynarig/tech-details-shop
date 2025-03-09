@@ -3,17 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { formatCurrency, formatDate } from "@/lib/utils";
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  customerName: string;
-  email: string;
-  total: number;
-  status: string;
-  date: string;
-  items: number;
-}
+import { Order } from "@/types";
 
 interface OrderListProps {
   filters: {

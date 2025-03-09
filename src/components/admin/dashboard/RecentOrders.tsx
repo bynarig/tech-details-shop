@@ -3,15 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { formatCurrency, formatDate } from "@/lib/utils";
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  customerName: string;
-  total: number;
-  status: string;
-  date: string;
-}
+import { Order } from "@/types";
 
 export default function RecentOrders() {
   const [orders, setOrders] = useState<Order[]>([]);

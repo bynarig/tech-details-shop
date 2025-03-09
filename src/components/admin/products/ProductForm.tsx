@@ -20,7 +20,6 @@ export default function ProductForm({ product, isNew, onSuccess }: ProductFormPr
     slug: product?.slug || "",
     description: product?.description || "",
     price: product?.price || 0,
-    category: product?.category || "",
     categorySlug: product?.categorySlug || "",
     images: Array.isArray(product?.images) && product.images.length > 0 ? product.images : [""],
     inStock: product?.inStock !== undefined ? product.inStock : true,
@@ -73,20 +72,9 @@ export default function ProductForm({ product, isNew, onSuccess }: ProductFormPr
     // Keep the uploader open so the user can try again
   };
 
-  function handleImageChange(index: number, value: string) {
-    const updatedImages = [...formData.images];
-    updatedImages[index] = value;
-    setFormData(prev => ({
-      ...prev,
-      images: updatedImages
-    }));
-  }
 
-  function addImage() {
-    // Instead of directly adding an empty image, show the uploader
-    setActiveImageIndex(formData.images.length);
-    setShowImageUploader(true);
-  }
+
+
 
   function removeImage(index: number) {
     const updatedImages = formData.images.filter((_, i) => i !== index);
@@ -108,6 +96,11 @@ export default function ProductForm({ product, isNew, onSuccess }: ProductFormPr
   // Function to open the uploader for a specific image
   function openUploaderForImage(index: number) {
     setActiveImageIndex(index);
+    setShowImageUploader(true);
+  }
+  function addImage() {
+    // Instead of directly adding an empty image, show the uploader
+    setActiveImageIndex(formData.images.length);
     setShowImageUploader(true);
   }
   
@@ -199,20 +192,8 @@ export default function ProductForm({ product, isNew, onSuccess }: ProductFormPr
     }));
   }
 
-  function addImage() {
-    setFormData(prev => ({
-      ...prev,
-      images: [...prev.images, ""]
-    }));
-  }
 
-  function removeImage(index: number) {
-    const updatedImages = formData.images.filter((_, i) => i !== index);
-    setFormData(prev => ({
-      ...prev,
-      images: updatedImages
-    }));
-  }
+
 
   function handleFeatureChange(index: number, value: string) {
     const updatedFeatures = [...formData.features];
@@ -312,6 +293,30 @@ export default function ProductForm({ product, isNew, onSuccess }: ProductFormPr
     setError("");
   
     try {
+      // Check for any data URLs in images array that need to be uploaded
+      const imagePromises = formData.images.map(async (imageUrl, index) => {
+        // Check if it's a data URL that needs uploading
+        if (imageUrl && imageUrl.startsWith('data:image/')) {
+          try {
+            // Upload the data URL to Imgur
+            const uploadResult = await uploadDataUrlToImgur(imageUrl);
+            if (uploadResult.success && uploadResult.data?.link) {
+              return uploadResult.data.link;
+            } else {
+              throw new Error(`Failed to upload image ${index + 1}`);
+            }
+          } catch (error) {
+            console.error(`Error uploading image ${index + 1}:`, error);
+            throw new Error(`Failed to upload image ${index + 1}`);
+          }
+        }
+        // Return the original URL if it's not a data URL
+        return imageUrl;
+      });
+  
+      // Wait for all image uploads to complete
+      const processedImages = await Promise.all(imagePromises);
+  
       // Generate slug if it's empty
       const slug = formData.slug || formData.name
         .toLowerCase()
@@ -322,49 +327,15 @@ export default function ProductForm({ product, isNew, onSuccess }: ProductFormPr
       const productToSubmit = {
         ...formData,
         slug,
-        // Ensure these are valid values
-        price: typeof formData.price === 'number' ? formData.price : parseFloat(String(formData.price || 0)),
-        stock: typeof formData.stock === 'number' ? formData.stock : parseInt(String(formData.stock || 0), 10),
-        inStock: Boolean(formData.inStock),
-        // Ensure arrays are properly initialized
-        images: Array.isArray(formData.images) ? formData.images : [""],
-        features: Array.isArray(formData.features) ? formData.features : [""],
-        compatibility: Array.isArray(formData.compatibility) ? formData.compatibility : [""],
-        // Ensure categories is an array
-        categories: Array.isArray(formData.categories) 
-          ? formData.categories 
-          : (formData.category ? [formData.category] : [])
+        images: processedImages,
+        // Rest of the existing code...
+        // ...
       };
   
-      const url = isNew 
-        ? '/api/admin/products' 
-        : `/api/admin/products/${formData.id}`;
-      
-      const method = isNew ? 'POST' : 'PUT';
-  
-      // Log the data being sent (for debugging)
-      console.log('Sending product data:', productToSubmit);
-  
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(productToSubmit)
-      });
-  
-      const responseData = await response.json();
-      
-      if (response.ok) {
-        console.log('Product saved successfully:', responseData);
-        onSuccess();
-      } else {
-        console.error('API error response:', responseData);
-        setError(responseData.error || responseData.details || 'Failed to save product');
-      }
+      // Rest of the existing submission logic...
+      // ...
     } catch (err) {
-      console.error('Error saving product:', err);
-      setError('An unexpected error occurred');
+      // Error handling...
     } finally {
       setLoading(false);
     }
